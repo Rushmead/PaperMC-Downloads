@@ -6,13 +6,18 @@ class Download extends Component {
     constructor(props){
         super(props);
         this.state = {
-            changelog: ""
+            changelog: []
         }
+        this.url = "https://ci.destroystokyo.com/job/PaperSpigot/" + this.props.version;
     }
 
     componentDidMount(){
-        axios.get('https://ci.destroystokyo.com/job/PaperSpigot/${this.props.version}/api/json?pretty=true').then(res => {
-            const changelog = res.data.data.changeSet.items[0].msg;
+        axios.get('/api/build/' + this.props.version).then(res => {
+            var changelog = res.data.changelog;
+            if(changelog.length > 3){
+                changelog = changelog.splice(0, 3);
+                changelog.push("Click below to see more!");
+            }
             this.setState({changelog});
         });
     }
@@ -23,8 +28,10 @@ class Download extends Component {
             <div className="panel panel-default">
   <div className="panel-heading">Version {this.props.version}</div>
   <div className="panel-body">
-            <p>Changelog: {this.props.changelog}</p>
-      <a href="https://ci.destroystokyo.com/job/PaperSpigot/${this.props.version}" className="btn btn-sm btn-success">Download</a>
+            <ul className="no-style">{this.state.changelog.map(change => {
+                    return <li>{change}</li>
+                })}</ul>
+                <a href={this.url} className="btn btn-sm btn-success">View Download</a>
   </div>
 </div>
         </div>

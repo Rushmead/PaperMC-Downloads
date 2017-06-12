@@ -8,7 +8,10 @@ import {
 import Home from '../Home/Home';
 import About from '../About/About';
 import Downloads from '../Downloads/Downloads';
-
+import { bindActionCreators } from 'redux';
+import axios from 'axios';
+import { connect } from 'react-redux';
+import * as downloadActions from '../../actions/downloads';
 
 class App extends Component {
   render() {
@@ -43,10 +46,38 @@ class App extends Component {
     </Router>
       );
   }
+
+      chunk(array, length){
+        if(!array.length){
+            return [];
+        }
+        return [ array.slice(0, length)].concat(this.chunk(array.slice(length), length));
+    }
+
+    componentDidMount(){
+            axios.get('/api/downloads').then(res => {
+                const downloads = res.data;
+                var chunked = this.chunk(downloads, 3);
+                var rows = [];
+                for(var i = 0; i < chunked.length; i++){
+                    rows.push(chunked[i]);
+                }
+                this.props.actions.addToDownloads(rows);
+            });
+        }
 }
 
 
 
 
-
-export default App;
+function mapStateToProps(state, props) {
+    return {
+        rows: state.rows
+    };
+}
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(downloadActions, dispatch)
+    }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(App);
